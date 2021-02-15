@@ -158,8 +158,8 @@ dependencies = [
 
 [[package]]
 name = "actix-web"
-version = "4.0.0-beta.3"
-source = "git+https://github.com/actix/actix-web.git?rev=bd26083f333ecf63e3eb444748250364ce124f5e#bd26083f333ecf63e3eb444748250364ce124f5e"
+version = "4.0.0-beta.2"
+source = "git+https://github.com/actix/actix-web.git?rev=991363a1042fe4046210cfe4356716976a10cb56#991363a1042fe4046210cfe4356716976a10cb56"
 dependencies = [
  "actix-codec",
  "actix-http",
@@ -193,9 +193,9 @@ dependencies = [
 
 [[package]]
 name = "actix-web-codegen"
-version = "0.5.0-beta.1"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8313dc4cbcae1785a7f14c3dfb7dfeb25fe96a03b20e5c38fe026786def5aa70"
+checksum = "ad26f77093333e0e7c6ffe54ebe3582d908a104e448723eec6d43d08b07143fb"
 dependencies = [
  "proc-macro2",
  "quote",
