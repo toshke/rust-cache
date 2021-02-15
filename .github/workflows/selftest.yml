@@ -24,6 +24,6 @@ jobs:
       - uses: ./
 
       - run: |
-          cargo install cargo-deny
+          cargo install cargo-deny --locked
           cargo check
           cargo test
