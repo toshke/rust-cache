@@ -22,7 +22,7 @@ const stateHash = "RUST_CACHE_HASH";
 const home = os.homedir();
 const cargoHome = process.env.CARGO_HOME || path.join(home, ".cargo");
 export const paths = {
-  cargoHome,
+  cargoHome: cargoHome + path.sep,
   target: "target",
 };
 
