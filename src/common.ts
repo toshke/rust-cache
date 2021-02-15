@@ -16,6 +16,7 @@ if (cwd) {
   process.chdir(cwd);
 }
 
+export const stateBins = "RUST_CACHE_BINS";
 export const stateKey = "RUST_CACHE_KEY";
 const stateHash = "RUST_CACHE_HASH";
 
@@ -80,6 +81,19 @@ export async function getCacheConfig(): Promise<CacheConfig> {
     key: `${key}-${lockHash}`,
     restoreKeys: [key],
   };
+}
+
+export async function getCargoBins(): Promise<Set<string>> {
+  const { installs }: { installs: { [key: string]: { bins: Array<string> } } } = JSON.parse(
+    await fs.promises.readFile(path.join(paths.cargoHome, ".crates2.json"), "utf8"),
+  );
+  const bins = new Set<string>();
+  for (const pkg of Object.values(installs)) {
+    for (const bin of pkg.bins) {
+      bins.add(bin);
+    }
+  }
+  return bins;
 }
 
 async function getRustKey(): Promise<string> {

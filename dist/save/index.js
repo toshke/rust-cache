@@ -56343,6 +56343,7 @@ const cwd = core.getInput("working-directory");
 if (cwd) {
     process.chdir(cwd);
 }
+const stateBins = "RUST_CACHE_BINS";
 const stateKey = "RUST_CACHE_KEY";
 const stateHash = "RUST_CACHE_HASH";
 const home = external_os_default().homedir();
@@ -56393,6 +56394,16 @@ async function getCacheConfig() {
         key: `${key}-${lockHash}`,
         restoreKeys: [key],
     };
+}
+async function getCargoBins() {
+    const { installs } = JSON.parse(await external_fs_default().promises.readFile(external_path_default().join(paths.cargoHome, ".crates2.json"), "utf8"));
+    const bins = new Set();
+    for (const pkg of Object.values(installs)) {
+        for (const bin of pkg.bins) {
+            bins.add(bin);
+        }
+    }
+    return bins;
 }
 async function getRustKey() {
     const rustc = await getRustVersion();
@@ -56554,15 +56565,11 @@ async function getRegistryName() {
     return external_path_default().basename(external_path_default().dirname(first));
 }
 async function cleanBin() {
-    const { installs } = JSON.parse(await external_fs_default().promises.readFile(external_path_default().join(paths.cargoHome, ".crates2.json"), "utf8"));
-    const bins = new Set();
-    for (const [name, pkg] of Object.entries(installs)) {
-        for (const bin in pkg.bins) {
-            core.debug(`found bin: ${name}/${bin}`);
-            bins.add(bin);
-        }
+    const bins = await getCargoBins();
+    const oldBins = JSON.parse(core.getState(stateBins));
+    for (const bin of oldBins) {
+        bins.delete(bin);
     }
-    core.debug(`bins: ${bins}`);
     const dir = await external_fs_default().promises.opendir(external_path_default().join(paths.cargoHome, "bin"));
     for await (const dirent of dir) {
         if (dirent.isFile() && !bins.has(dirent.name)) {

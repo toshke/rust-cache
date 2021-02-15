@@ -5,7 +5,17 @@ import * as glob from "@actions/glob";
 import * as io from "@actions/io";
 import fs from "fs";
 import path from "path";
-import { cleanTarget, getCacheConfig, getPackages, Packages, paths, rm, stateKey } from "./common";
+import {
+  cleanTarget,
+  getCacheConfig,
+  getCargoBins,
+  getPackages,
+  Packages,
+  paths,
+  rm,
+  stateBins,
+  stateKey,
+} from "./common";
 
 async function run() {
   try {
@@ -61,18 +71,12 @@ async function getRegistryName(): Promise<string> {
 }
 
 async function cleanBin() {
-  const { installs }: { installs: { [key: string]: { bins: Array<string> } } } = JSON.parse(
-    await fs.promises.readFile(path.join(paths.cargoHome, ".crates2.json"), "utf8"),
-  );
-  const bins = new Set<string>();
-  for (const [name, pkg] of Object.entries(installs)) {
-    for (const bin in pkg.bins) {
-      core.debug(`found bin: ${name}/${bin}`);
-      bins.add(bin);
-    }
-  }
+  const bins = await getCargoBins();
+  const oldBins = JSON.parse(core.getState(stateBins));
 
-  core.debug(`bins: ${bins}`);
+  for (const bin of oldBins) {
+    bins.delete(bin);
+  }
 
   const dir = await fs.promises.opendir(path.join(paths.cargoHome, "bin"));
   for await (const dirent of dir) {
