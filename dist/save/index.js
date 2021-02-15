@@ -56556,8 +56556,9 @@ async function getRegistryName() {
 async function cleanBin() {
     const { installs } = JSON.parse(await external_fs_default().promises.readFile(external_path_default().join(paths.cargoHome, ".crates2.json"), "utf8"));
     const bins = new Set();
-    for (const pkg of Object.values(installs)) {
+    for (const [name, pkg] of Object.entries(installs)) {
         for (const bin in pkg.bins) {
+            core.debug(`found bin: ${name}/${bin}`);
             bins.add(bin);
         }
     }

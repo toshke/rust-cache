@@ -65,8 +65,9 @@ async function cleanBin() {
     await fs.promises.readFile(path.join(paths.cargoHome, ".crates2.json"), "utf8"),
   );
   const bins = new Set<string>();
-  for (const pkg of Object.values(installs)) {
+  for (const [name, pkg] of Object.entries(installs)) {
     for (const bin in pkg.bins) {
+      core.debug(`found bin: ${name}/${bin}`);
       bins.add(bin);
     }
   }
