@@ -56348,9 +56348,7 @@ const stateHash = "RUST_CACHE_HASH";
 const home = external_os_default().homedir();
 const cargoHome = process.env.CARGO_HOME || external_path_default().join(home, ".cargo");
 const paths = {
-    index: external_path_default().join(cargoHome, "registry/index"),
-    cache: external_path_default().join(cargoHome, "registry/cache"),
-    git: external_path_default().join(cargoHome, "git"),
+    cargoHome,
     target: "target",
 };
 const RefKey = "GITHUB_REF";
@@ -56380,7 +56378,7 @@ async function getCacheConfig() {
     }
     key += await getRustKey();
     return {
-        paths: [paths.index, paths.cache, paths.git, paths.target],
+        paths: [paths.cargoHome, paths.target],
         key: `${key}-${lockHash}`,
         restoreKeys: [key],
     };
@@ -56532,7 +56530,7 @@ async function run() {
 }
 run();
 async function getRegistryName() {
-    const globber = await glob.create(`${paths.index}/**/.last-updated`, { followSymbolicLinks: false });
+    const globber = await glob.create(`${paths.cargoHome}/registry/index/**/.last-updated`, { followSymbolicLinks: false });
     const files = await globber.glob();
     if (files.length > 1) {
         core.warning(`got multiple registries: "${files.join('", "')}"`);
@@ -56541,9 +56539,10 @@ async function getRegistryName() {
     return external_path_default().basename(external_path_default().dirname(first));
 }
 async function cleanRegistry(registryName, packages) {
-    await io.rmRF(external_path_default().join(paths.index, registryName, ".cache"));
+    await io.rmRF(external_path_default().join(paths.cargoHome, "registry", "index", registryName, ".cache"));
+    await io.rmRF(external_path_default().join(paths.cargoHome, "registry", "src"));
     const pkgSet = new Set(packages.map((p) => `${p.name}-${p.version}.crate`));
-    const dir = await external_fs_default().promises.opendir(external_path_default().join(paths.cache, registryName));
+    const dir = await external_fs_default().promises.opendir(external_path_default().join(paths.cargoHome, "registry", "cache", registryName));
     for await (const dirent of dir) {
         if (dirent.isFile() && !pkgSet.has(dirent.name)) {
             await rm(dir.path, dirent);
@@ -56551,8 +56550,8 @@ async function cleanRegistry(registryName, packages) {
     }
 }
 async function cleanGit(packages) {
-    const coPath = external_path_default().join(paths.git, "checkouts");
-    const dbPath = external_path_default().join(paths.git, "db");
+    const coPath = external_path_default().join(paths.cargoHome, "git", "checkouts");
+    const dbPath = external_path_default().join(paths.cargoHome, "git", "db");
     const repos = new Map();
     for (const p of packages) {
         if (!p.path.startsWith(coPath)) {

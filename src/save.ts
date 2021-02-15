@@ -46,7 +46,7 @@ async function run() {
 run();
 
 async function getRegistryName(): Promise<string> {
-  const globber = await glob.create(`${paths.index}/**/.last-updated`, { followSymbolicLinks: false });
+  const globber = await glob.create(`${paths.cargoHome}/registry/index/**/.last-updated`, { followSymbolicLinks: false });
   const files = await globber.glob();
   if (files.length > 1) {
     core.warning(`got multiple registries: "${files.join('", "')}"`);
@@ -57,11 +57,12 @@ async function getRegistryName(): Promise<string> {
 }
 
 async function cleanRegistry(registryName: string, packages: Packages) {
-  await io.rmRF(path.join(paths.index, registryName, ".cache"));
+  await io.rmRF(path.join(paths.cargoHome, "registry", "index", registryName, ".cache"));
+  await io.rmRF(path.join(paths.cargoHome, "registry", "src"));
 
   const pkgSet = new Set(packages.map((p) => `${p.name}-${p.version}.crate`));
 
-  const dir = await fs.promises.opendir(path.join(paths.cache, registryName));
+  const dir = await fs.promises.opendir(path.join(paths.cargoHome, "registry", "cache", registryName));
   for await (const dirent of dir) {
     if (dirent.isFile() && !pkgSet.has(dirent.name)) {
       await rm(dir.path, dirent);
@@ -70,8 +71,8 @@ async function cleanRegistry(registryName: string, packages: Packages) {
 }
 
 async function cleanGit(packages: Packages) {
-  const coPath = path.join(paths.git, "checkouts");
-  const dbPath = path.join(paths.git, "db");
+  const coPath = path.join(paths.cargoHome, "git", "checkouts");
+  const dbPath = path.join(paths.cargoHome, "git", "db");
   const repos = new Map<string, Set<string>>();
   for (const p of packages) {
     if (!p.path.startsWith(coPath)) {
