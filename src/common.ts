@@ -22,7 +22,7 @@ const stateHash = "RUST_CACHE_HASH";
 const home = os.homedir();
 const cargoHome = process.env.CARGO_HOME || path.join(home, ".cargo");
 export const paths = {
-  cargoHome: cargoHome + path.sep,
+  cargoHome,
   target: "target",
 };
 
@@ -65,7 +65,7 @@ export async function getCacheConfig(): Promise<CacheConfig> {
   key += await getRustKey();
 
   return {
-    paths: [paths.cargoHome, paths.target],
+    paths: [`${paths.cargoHome}/**/*`, paths.target],
     key: `${key}-${lockHash}`,
     restoreKeys: [key],
   };
