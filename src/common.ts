@@ -23,6 +23,9 @@ const home = os.homedir();
 const cargoHome = process.env.CARGO_HOME || path.join(home, ".cargo");
 export const paths = {
   cargoHome,
+  index: path.join(cargoHome, "registry/index"),
+  cache: path.join(cargoHome, "registry/cache"),
+  git: path.join(cargoHome, "git"),
   target: "target",
 };
 
@@ -65,7 +68,15 @@ export async function getCacheConfig(): Promise<CacheConfig> {
   key += await getRustKey();
 
   return {
-    paths: [`${paths.cargoHome}/**/*`, paths.target],
+    paths: [
+      path.join(cargoHome, "bin"),
+      path.join(cargoHome, ".crates2.json"),
+      path.join(cargoHome, ".crates.toml"),
+      paths.index,
+      paths.cache,
+      paths.git,
+      paths.target,
+    ],
     key: `${key}-${lockHash}`,
     restoreKeys: [key],
   };

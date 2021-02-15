@@ -56349,6 +56349,9 @@ const home = external_os_default().homedir();
 const cargoHome = process.env.CARGO_HOME || external_path_default().join(home, ".cargo");
 const paths = {
     cargoHome,
+    index: external_path_default().join(cargoHome, "registry/index"),
+    cache: external_path_default().join(cargoHome, "registry/cache"),
+    git: external_path_default().join(cargoHome, "git"),
     target: "target",
 };
 const RefKey = "GITHUB_REF";
@@ -56378,7 +56381,15 @@ async function getCacheConfig() {
     }
     key += await getRustKey();
     return {
-        paths: [`${paths.cargoHome}/**/*`, paths.target],
+        paths: [
+            external_path_default().join(cargoHome, "bin"),
+            external_path_default().join(cargoHome, ".crates2.json"),
+            external_path_default().join(cargoHome, ".crates.toml"),
+            paths.index,
+            paths.cache,
+            paths.git,
+            paths.target,
+        ],
         key: `${key}-${lockHash}`,
         restoreKeys: [key],
     };
